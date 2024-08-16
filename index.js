@@ -40,6 +40,9 @@ app.get('/api/persons', (req, res) => {
     res.json(notes);
 })
 
+/*
+* Get a person by id
+*/
 app.get('/api/persons/:id', (req, res) => {
     const id = req.params.id;
     const note = notes.find(note => note.id === id);
@@ -48,6 +51,15 @@ app.get('/api/persons/:id', (req, res) => {
     } else {
         res.status(404).end();
     }
+})
+
+/*
+* Delete a person by id
+*/
+app.delete('/api/persons/:id', (req, res) => {
+    const id = req.params.id;
+    notes = notes.filter(note => note.id !== id);
+    res.status(204).end();
 })
 
 app.listen(PORT, () => {
