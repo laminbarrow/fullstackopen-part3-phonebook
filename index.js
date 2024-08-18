@@ -1,8 +1,12 @@
 const express = require('express');
 const app = express();
 
-//use the express.json middleware to parse the JSON body of the requests
+const morgan = require('morgan')
+
+// middleware uses
 app.use(express.json());
+app.use(morgan('tiny'))
+
 const PORT = 3001;
 
 let notes = [
@@ -80,7 +84,6 @@ app.post('/api/persons', (req, res) => {
     }
 
     const findExistingPerson = notes.find(item => item.name === body.name);
-    console.log(findExistingPerson);
     // check if the name already exists
     if(findExistingPerson){
         return res.status(400).json({
