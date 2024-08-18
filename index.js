@@ -1,13 +1,13 @@
-const express = require('express');
-const app = express();
+const express = require('express')
+const app = express()
 
 const morgan = require('morgan')
 
 // middleware uses
-app.use(express.json());
+app.use(express.json())
 app.use(morgan('tiny'))
 
-const PORT = 3001;
+const PORT = 3001
 
 let notes = [
     {
@@ -33,31 +33,31 @@ let notes = [
 ]
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.send('Hello World')
 })
 
 app.get('/info', (req, res) => {
-    const date = new Date();
+    const date = new Date()
     res.send(`
         <p>Phonebook has info for ${notes.length} people</p>
         <p>${date}</p>
-    `);
+    `)
 })
 
 app.get('/api/persons', (req, res) => {
-    res.json(notes);
+    res.json(notes)
 })
 
 /*
 * Get a person by id
 */
 app.get('/api/persons/:id', (req, res) => {
-    const id = req.params.id;
-    const note = notes.find(note => note.id === id);
+    const id = req.params.id
+    const note = notes.find(note => note.id === id)
     if (note) {
-        res.json(note);
+        res.json(note)
     } else {
-        res.status(404).end();
+        res.status(404).end()
     }
 })
 
@@ -65,16 +65,16 @@ app.get('/api/persons/:id', (req, res) => {
 * Delete a person by id
 */
 app.delete('/api/persons/:id', (req, res) => {
-    const id = req.params.id;
-    notes = notes.filter(note => note.id !== id);
-    res.status(204).end();
+    const id = req.params.id
+    notes = notes.filter(note => note.id !== id)
+    res.status(204).end()
 })
 
 /* 
 * Create a new person
 */
 app.post('/api/persons', (req, res) => {
-    const body = req.body;
+    const body = req.body
 
     // data validation
     if(!body.name || !body.number){
@@ -83,7 +83,7 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    const findExistingPerson = notes.find(item => item.name === body.name);
+    const findExistingPerson = notes.find(item => item.name === body.name)
     // check if the name already exists
     if(findExistingPerson){
         return res.status(400).json({
@@ -102,10 +102,10 @@ app.post('/api/persons', (req, res) => {
     }
 
     //concat the new note to the notes array
-    notes = notes.concat(note);
-    res.json(body);
+    notes = notes.concat(note)
+    res.json(body)
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`)
 })
