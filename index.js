@@ -1,4 +1,8 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
+
+//use the express.json middleware to parse the JSON body of the requests
+app.use(express.json());
 const PORT = 3001;
 
 let notes = [
@@ -61,6 +65,43 @@ app.delete('/api/persons/:id', (req, res) => {
     notes = notes.filter(note => note.id !== id);
     res.status(204).end();
 })
+
+/* 
+* Create a new person
+*/
+app.post('/api/persons', (req, res) => {
+    const body = req.body;
+
+    // data validation
+    if(!body.name || !body.number){
+        return res.status(400).json({
+            error: 'name or number is missing'
+        })
+    }
+
+    const findExistingPerson = notes.find(item => item.name === body.name);
+    console.log(findExistingPerson);
+    // check if the name already exists
+    if(findExistingPerson){
+        return res.status(400).json({
+            error: 'name must be unique'
+        })
+    }
+
+    // new note 
+    // Generate a new id for the phonebook entry with the Math.random function. 
+    // Use a big enough range for your random values so that the likelihood of 
+    // creating duplicate ids is small.
+    note = {
+        id: String(Math.floor(Math.random() * 10000)),
+        name: body.name,
+        number: body.number
+    }
+
+    //concat the new note to the notes array
+    notes = notes.concat(note);
+    res.json(body);
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
