@@ -5,6 +5,7 @@ const morgan = require('morgan')
 
 // middleware uses
 app.use(express.json())
+app.use(express.static('dist'))
 
 //Configure morgan so that it also shows the data sent in HTTP POST requests:
 morgan.token('post-body', function (req, res) { 
