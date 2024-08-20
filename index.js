@@ -12,7 +12,7 @@ morgan.token('post-body', function (req, res) {
 })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post-body'))
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 let notes = [
     {
