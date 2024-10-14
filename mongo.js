@@ -18,7 +18,6 @@ const Person = mongoose.model('Person', phoneBookSchema);
 
 /* Only process the password, name and number if they are provided as arguments */
 if (process.argv.length === 3) {
-    /* Display all the contacts in the phonebook */
     /* display contacts in the phonebook */
     mongoose.connect(mongoURL);
 
