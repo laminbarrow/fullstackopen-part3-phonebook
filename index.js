@@ -46,7 +46,18 @@ app.get('/api/persons/:id', (req, res) => {
     const id = req.params.id
 
     Person.findById(id).then(person => {
+        //error handling when not found
+        if(!person){
+            return res.status(404)
+                        .json({ error: 'person not found' })
+                        .end()
+        }
+        //return the person object
         res.json(person)
+    }).catch(error => {
+      console.log(error);
+      //bad request code meaning an id that doesn't match the Mongo identifier format
+      res.status(400).send({ error: "malformatted id" });
     })
 })
 
@@ -94,6 +105,23 @@ app.post('/api/persons', (req, res) => {
     })
 
 });
+
+/* Update a person */
+app.put('/api/persons/:id', (req, res) => {
+    const id = req.params.id
+    const body = req.body
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+    Person.findByIdAndUpdate(id, person, { new: true }) // { new: true } returns the updated document
+        .then(updatedPerson => {
+            res.json(updatedPerson)
+        })
+        .catch(error => {
+            res.status(400).send({ error: 'malformatted id' })
+        })          
+})
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
