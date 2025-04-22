@@ -80,16 +80,30 @@ app.post('/api/persons', (req, res, next) => {
         })
     }
 
-    // const findExistingPerson = Person.find({
-    //     name: body.name
-    // }).then(res => res);
+    // the frontend will try to update the phone number of the existing entry by making an 
+    // HTTP PUT request to the entry's unique URL. The backend support this request type as well
+    // by checking if the name already exists in the database. If it does, it will update the number
+    // if the name already exists, we will update the number
 
     // // check if the name already exists
-    // if(findExistingPerson){
-    //     return res.status(400).json({
-    //         error: 'name must be unique'
-    //     })
-    // }
+    const findExistingPerson = Person.find({
+        name: body.name
+    }).then(res => res);
+
+    // check if the name already exists
+    if(findExistingPerson){
+        // if it does, we will update the number
+        Person.findOneAndUpdate(
+            { name: body.name },
+            { number: body.number },
+            { new: true }
+        ).then(updatedPerson => {
+            res.json(updatedPerson)
+        }).catch(error => next(error))
+        
+        // return the early as there is no need to create a new person
+        return
+    }
 
     const person = new Person({
         name: body.name,
