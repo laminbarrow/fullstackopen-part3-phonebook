@@ -6,8 +6,8 @@ const morgan = require('morgan')
 const Person = require('./models/person')
 
 // middleware uses
+app.use(express.static("dist"));
 app.use(express.json())
-app.use(express.static('dist'))
 
 //Configure morgan so that it also shows the data sent in HTTP POST requests:
 morgan.token('post-body', function (req, res) { 
@@ -33,16 +33,16 @@ app.get('/info', (req, res) => {
     `)
 })
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
     Person.find({}).then(persons => {
         res.json(persons)
-    })
+    }).catch(error => next(error))
 })
 
 /*
 * Get a person by id
 */
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
     const id = req.params.id
 
     Person.findById(id).then(person => {
@@ -54,27 +54,23 @@ app.get('/api/persons/:id', (req, res) => {
         }
         //return the person object
         res.json(person)
-    }).catch(error => {
-      console.log(error);
-      //bad request code meaning an id that doesn't match the Mongo identifier format
-      res.status(400).send({ error: "malformatted id" });
-    })
+    }).catch(error => next(error))
 })
 
 /*
 * Delete a person by id
 */
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
     const id = req.params.id
     Person.findByIdAndDelete(id).then((result) => {
       res.status(204).end();
-    });
+    }).catch(error => next(error));
 })
 
 /* 
 * Create a new person
 */
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body
 
     // data validation
@@ -102,12 +98,12 @@ app.post('/api/persons', (req, res) => {
 
     person.save().then(savedPerson => {
         res.json(savedPerson)
-    })
+    }).catch(error => next(error))
 
 });
 
 /* Update a person */
-app.put('/api/persons/:id', (req, res) => {
+app.put('/api/persons/:id', (req, res, next) => {
     const id = req.params.id
     const body = req.body
     const person = {
@@ -118,11 +114,32 @@ app.put('/api/persons/:id', (req, res) => {
         .then(updatedPerson => {
             res.json(updatedPerson)
         })
-        .catch(error => {
-            res.status(400).send({ error: 'malformatted id' })
-        })          
+        .catch(error => next(error))          
 })
 
+/* error handling middleware functions */
+// unknown endpoint
+const unknownEndpoint = (req, res) => {
+    res.status(404).send({ error: 'unknown endpoint' })
+}
+// error handling middleware
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message)
+
+    if(error.name === 'CastError'){
+        return res.status(400).send({ error: 'malformatted id' })
+    } else if(error.name === 'ValidationError'){
+        return res.status(400).json({ error: error.message })
+    }
+
+    next(error)
+}
+
+//mount error handling middleware
+app.use(unknownEndpoint);
+app.use(errorHandler)
+
+// start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
