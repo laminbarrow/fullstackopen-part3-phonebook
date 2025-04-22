@@ -82,7 +82,7 @@ app.post('/api/persons', (req, res, next) => {
 
     // the frontend will try to update the phone number of the existing entry by making an 
     // HTTP PUT request to the entry's unique URL. The backend support this request type as well
-    // by checking if the name already exists in the database. If it does, it will update the number
+    // without frontend Javascript by checking if the name already exists in the database. If it does, it will update the number
     // if the name already exists, we will update the number
 
     // // check if the name already exists
