@@ -21,16 +21,16 @@ app.get('/', (req, res) => {
     res.send('Hello World')
 })
 
-app.get('/info', (req, res) => {
+app.get('/info', (req, res, next) => {
     const date = new Date()
-    const person = Person.find({}).then(res => {
-        res
-    });
-    //person should return the number of documents in the collection
-    res.send(`
+    const PersonInfo = Person.find({}).then(person => {
+      //person should return the number of documents in the collection
+      res.send(`
         <p>Phonebook has info for ${person.length} people</p>
         <p>${date}</p>
-    `)
+    `);
+    }).catch(error => next(error))
+    
 })
 
 app.get('/api/persons', (req, res, next) => {
