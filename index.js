@@ -71,49 +71,45 @@ app.delete('/api/persons/:id', (req, res, next) => {
 * Create a new person
 */
 app.post('/api/persons', (req, res, next) => {
-    const body = req.body
+    const body = req.body;
 
-    // data validation
-    if(!body.name || !body.number){
+    // Data validation
+    if (!body.name || !body.number) {
         return res.status(400).json({
-            error: 'name or number is missing'
+            error: 'name or number is missing',
+        });
+    }
+
+    // Check if the name already exists
+    Person.findOne({ name: body.name })
+        .then((existingPerson) => {
+            if (existingPerson) {
+                // Update the number if the name already exists
+                Person.findOneAndUpdate(
+                    { name: body.name },
+                    { number: body.number },
+                    { new: true, runValidators: true }
+                )
+                    .then((updatedPerson) => {
+                        res.json(updatedPerson);
+                    })
+                    .catch((error) => next(error));
+            } else {
+                // Create a new person if the name does not exist
+                const person = new Person({
+                    name: body.name,
+                    number: body.number,
+                });
+
+                person
+                    .save()
+                    .then((savedPerson) => {
+                        res.json(savedPerson);
+                    })
+                    .catch((error) => next(error));
+            }
         })
-    }
-
-    // the frontend will try to update the phone number of the existing entry by making an 
-    // HTTP PUT request to the entry's unique URL. The backend support this request type as well
-    // without frontend Javascript by checking if the name already exists in the database. If it does, it will update the number
-    // if the name already exists, we will update the number
-
-    // // check if the name already exists
-    const findExistingPerson = Person.find({
-        name: body.name
-    }).then(res => res);
-
-    // check if the name already exists
-    if(findExistingPerson){
-        // if it does, we will update the number
-        Person.findOneAndUpdate(
-            { name: body.name },
-            { number: body.number },
-            { new: true }
-        ).then(updatedPerson => {
-            res.json(updatedPerson)
-        }).catch(error => next(error))
-        
-        // return the early as there is no need to create a new person
-        return
-    }
-
-    const person = new Person({
-        name: body.name,
-        number: body.number
-    })
-
-    person.save().then(savedPerson => {
-        res.json(savedPerson)
-    }).catch(error => next(error))
-
+        .catch((error) => next(error));
 });
 
 /* Update a person */
@@ -124,8 +120,18 @@ app.put('/api/persons/:id', (req, res, next) => {
         name: body.name,
         number: body.number
     }
-    Person.findByIdAndUpdate(id, person, { new: true }) // { new: true } returns the updated document
+    Person.findByIdAndUpdate(
+        id, 
+        person, 
+        { 
+            new: true, // returns the updated document
+            runValidators: true,
+        }
+    ) 
         .then(updatedPerson => {
+             if (!updatedPerson) {
+               return res.status(404).json({ error: "person not found" })
+             }
             res.json(updatedPerson)
         })
         .catch(error => next(error))          
